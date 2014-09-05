@@ -4,10 +4,31 @@ __author__ = 'wacax'
 #code based on https://github.com/MLWave/kaggle-criteo/blob/master/csv_to_vw.py
 
 #libraries
+import os
 import pandas as pd
 
-#open 100 lines from text
+#directories; change directories accordingly
+wd = '/home/wacax/Wacax/Kaggle/criteoLabs/CRITEO Display Advertising Challenge/'
+dataDir = '/home/wacax/Wacax/Kaggle/criteoLabs/Data/'
 
+print os.getcwd()
+if os.getcwd() + '/' != wd:
+    os.chdir(wd)
+
+#open 100 lines from text
+#--------------------------------------------------------------------
+#Load Data as Pandas Data Frame
+#Read .csv Data
+#2Train
+train = pd.read_csv(dataDir + 'train.csv', nrows=100)
+#2Test
+test = pd.read_csv(dataDir + 'test.csv', nrows=100)
+#check initial rows
+print train.head()
+print test.head()
+#Data Dimensions
+print train.shape
+print test.shape
 
 
 from datetime import datetime
