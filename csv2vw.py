@@ -4,32 +4,18 @@ __author__ = 'wacax'
 #code based on https://github.com/MLWave/kaggle-criteo/blob/master/csv_to_vw.py
 
 #libraries
-import os
-import pandas as pd
+from os import getcwd, chdir
 
 #directories; change directories accordingly
 wd = '/home/wacax/Wacax/Kaggle/criteoLabs/CRITEO Display Advertising Challenge/'
 dataDir = '/home/wacax/Wacax/Kaggle/criteoLabs/Data/'
 
-print os.getcwd()
-if os.getcwd() + '/' != wd:
-    os.chdir(wd)
+print getcwd()
+if getcwd() + '/' != wd:
+    chdir(wd)
 
-#open 100 lines from text
-#--------------------------------------------------------------------
-#Load Data as Pandas Data Frame
-#Read .csv Data
-#2Train
-train = pd.read_csv(dataDir + 'train.csv', nrows=100)
-#2Test
-test = pd.read_csv(dataDir + 'test.csv', nrows=100)
-#check initial rows
-print train.head()
-print test.head()
-#Data Dimensions
-print train.shape
-print test.shape
-
+#  Features have to be in the form of:
+#  [Label] [Importance [Tag]]|Namespace Features |Namespace Features ... |Namespace Features
 
 from datetime import datetime
 from csv import DictReader
@@ -41,10 +27,10 @@ def csv_to_vw(loc_csv, loc_output, train=True):
   TODO: Too slow for a daily cron job. Try optimize, Pandas or Go.
   """
   start = datetime.now()
-  print("\nTurning %s into %s. Is_train_set? %s"%(loc_csv,loc_output,train))
+  print("\nTurning %s into %s. Is_train_set? %s"  %(loc_csv, loc_output, train))
 
-  with open(loc_output,"wb") as outfile:
-    for e, row in enumerate( DictReader(open(loc_csv)) ):
+  with open(loc_output, "wb") as outfile:
+    for e, row in enumerate(DictReader(open(loc_csv))):
 
 	  #Creating the features
       numerical_features = ""
@@ -64,16 +50,39 @@ def csv_to_vw(loc_csv, loc_output, train=True):
           label = 1
         else:
           label = -1 #we set negative label to -1
-        outfile.write( "%s '%s |i%s |c%s\n" % (label,row['Id'],numerical_features,categorical_features) )
+        outfile.write("%s '%s |i%s |c%s\n" % (label, row['Id'], numerical_features, categorical_features))
 
       else: #we dont care about labels
-        outfile.write( "1 '%s |i%s |c%s\n" % (row['Id'],numerical_features,categorical_features) )
+        outfile.write("1 '%s |i%s |c%s\n" % (row['Id'], numerical_features, categorical_features))
 
 	  #Reporting progress
       if e % 1000000 == 0:
-        print("%s\t%s"%(e, str(datetime.now() - start)))
+        print("%s\t%s" % (e, str(datetime.now() - start)))
 
-  print("\n %s Task execution time:\n\t%s"%(e, str(datetime.now() - start)))
+  print("\n %s Task execution time:\n\t%s" % (e, str(datetime.now() - start)))
 
-#csv_to_vw("d:\\Downloads\\train\\train.csv", "c:\\click.train.vw",train=True)
-#csv_to_vw("d:\\Downloads\\test\\test.csv", "d:\\click.test.vw",train=False)
+csv_to_vw(dataDir + 'train.csv', dataDir + 'train.vw', train=True)
+csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', train=False)
+
+def test(plot=True):
+    from pandas import read_csv
+    import matplotlib.pyplot as plt
+    #open 100 lines from text
+    #--------------------------------------------------------------------
+    #Load Data as Pandas Data Frame
+    #Read .csv Data
+    #sample Train
+    train = read_csv(dataDir + 'train.csv', nrows=10000)
+    #sample Test
+    test = read_csv(dataDir + 'test.csv', nrows=10000)
+
+    #sample Submission
+    submission = read_csv(dataDir + 'random_submission.csv')
+
+    if plot==True:
+        #EDA
+        train['Label'].hist()
+        plt.ylabel('Amount of positive labels')
+        plt.show()
+
+
