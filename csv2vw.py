@@ -5,6 +5,7 @@ __author__ = 'wacax'
 
 #libraries
 from os import getcwd, chdir
+from pandas import read_csv
 
 #directories; change directories accordingly
 wd = '/home/wacax/Wacax/Kaggle/criteoLabs/CRITEO Display Advertising Challenge/'
@@ -14,8 +15,20 @@ print getcwd()
 if getcwd() + '/' != wd:
     chdir(wd)
 
-#  Features have to be in the form of:
-#  [Label] [Importance [Tag]]|Namespace Features |Namespace Features ... |Namespace Features
+#open 100 lines from text
+#--------------------------------------------------------------------
+#Load Data as Pandas Data Frame
+#Read .csv Data
+#sample Train
+trainMini = read_csv(dataDir + 'train.csv', nrows=1000)
+#sample Test
+testMini = read_csv(dataDir + 'test.csv', nrows=1000)
+
+trainTypes = trainMini.dtypes
+testTypes = testMini.dtypes
+
+#Features have to be in the form of:
+#[Label] [Importance [Tag]]|Namespace Features |Namespace Features ... |Namespace Features
 
 from datetime import datetime
 from csv import DictReader
@@ -60,9 +73,6 @@ def csv_to_vw(loc_csv, loc_output, train=True):
         print("%s\t%s" % (e, str(datetime.now() - start)))
 
   print("\n %s Task execution time:\n\t%s" % (e, str(datetime.now() - start)))
-
-csv_to_vw(dataDir + 'train.csv', dataDir + 'train.vw', train=True)
-csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', train=False)
 
 def test(plot=True):
     from pandas import read_csv
