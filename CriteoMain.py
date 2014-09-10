@@ -34,9 +34,9 @@ csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', train=False)
 #MODELING
 #Logistic Regression with l1 regularization
 #Training VW:
-system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'modell1.vw --loss_function logistic --passes 20 -q ii -b 28')
+system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQ20Pass.vw --loss_function logistic  -q ii -b 28')
 #Testing VW:
-system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modell1.vw -p ' + dataDir + 'logRegl1.txt')
+system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQ20Pass.vw -p ' + dataDir + 'logQ20.txt')
 
 #Neural Networks
 #Training VW:
@@ -44,9 +44,9 @@ system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'NN.vw --nn 100 --passes 20 
 #Testing VW:
 system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'NN.vw -p ' + dataDir + 'NN100.txt')
 
-with open(dataDir + 'PredictionIII.csv', 'wb') as outfile:
+with open(dataDir + 'PredictionV.csv', 'wb') as outfile:
     outfile.write('Id,Predicted\n')
 #    for line in open(dataDir + 'logRegl1.txt'):
-    for line in open(dataDir + 'NN100.txt'):
+    for line in open(dataDir + 'logQ20.txt'):
         row = line.strip().split(" ")
         outfile.write("%s,%f\n"%(row[1], sigmoid(float(row[0]))))
