@@ -15,25 +15,24 @@ print getcwd()
 if getcwd() + '/' != wd:
     chdir(wd)
 
-#open 100 lines from text
-#--------------------------------------------------------------------
-#Load Data as Pandas Data Frame
-#Read .csv Data
-#sample Train
-trainMini = read_csv(dataDir + 'train.csv', nrows=1000)
-#sample Test
-testMini = read_csv(dataDir + 'test.csv', nrows=1000)
-
-trainTypes = trainMini.dtypes
-testTypes = testMini.dtypes
-
-#Features have to be in the form of:
-#[Label] [Importance [Tag]]|Namespace Features |Namespace Features ... |Namespace Features
-
 from datetime import datetime
 from csv import DictReader
+#from pandas import read_csv
 
 def csv_to_vw(loc_csv, loc_output, train=True):
+#def csv_to_vw(loc_csv, loc_output, invalidFeatures=NULL, Label=NULL, ID=NULL, weights=NULL, train=True):
+
+    #open 1000 lines from text
+    #Load Data as Pandas Data Frame
+    #Read .csv Data
+    #minifile = read_csv(loc_csv, nrows=1000)
+
+    #typeFeatures = minifile.dtypes
+    #fileObjectIXs = (typeFeatures.columns != invalidFeatures) and (typeFeatures == 'object')
+    #fileNumericIXs = (typeFeatures.columns != invalidFeatures) and (typeFeatures == 'float64' or type == 'int64')
+
+    #Features have to be in the form:
+    #[Label] [Importance [Tag]]|Namespace Features |Namespace Features ... |Namespace Features
   """
   Munges a CSV file (loc_csv) to a VW file (loc_output). Set "train"
   to False when munging a test set.
@@ -49,7 +48,15 @@ def csv_to_vw(loc_csv, loc_output, train=True):
       numerical_features = ""
       categorical_features = ""
       for k,v in row.items():
-        if k not in ["Label","Id"]:
+
+#     k,v = row.items()
+#     factorIx = fileObjectIXs and (len(str(v)) > 0)
+#     categorical_features = v[factorIx]
+
+#     numIx = fileNumericIXs and (len(str(v)) > 0)
+#     categorical_features = v[numIx]
+
+        if k not in ["Label", "Id"]:
           if "I" in k: # numerical feature, example: I5
             if len(str(v)) > 0: #check for empty values
               numerical_features += " %s:%s" % (k,v)
@@ -59,14 +66,17 @@ def csv_to_vw(loc_csv, loc_output, train=True):
 
 	  #Creating the labels
       if train: #we care about labels
+#        if row[Label] == '1':
         if row['Label'] == "1":
           label = 1
         else:
           label = -1 #we set negative label to -1
         outfile.write("%s '%s |i%s |c%s\n" % (label, row['Id'], numerical_features, categorical_features))
+#        outfile.write("%s '%s |i%s |c%s\n" % (label, row[ID], numerical_features, categorical_features))
 
       else: #we dont care about labels
         outfile.write("1 '%s |i%s |c%s\n" % (row['Id'], numerical_features, categorical_features))
+#        outfile.write("1 '%s |i%s |c%s\n" % (row[ID], numerical_features, categorical_features))
 
 	  #Reporting progress
       if e % 1000000 == 0:

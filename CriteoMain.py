@@ -22,6 +22,11 @@ if getcwd() + '/' != wd:
 csv_to_vw(dataDir + 'train.csv', dataDir + 'train.vw', train=True)
 csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', train=False)
 
+#csv_to_vw(dataDir + 'train.csv', dataDir + 'train.vw', invalidFeatures=['Label', 'Id'],
+# Label='Label', ID='Id', weights=NULL, train=True)
+#csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', invalidFeatures=['Id'],
+# Label='Label', ID='Id', weights=NULL, train=False)
+
 #Use vowpal wabbit directly from command line for training
 #vw hypersearch
 # for a logistic loss train-set:
@@ -34,9 +39,9 @@ csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', train=False)
 #MODELING
 #Logistic Regression with l1 regularization
 #Training VW:
-system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQ20Pass.vw --loss_function logistic  -q ii -b 28')
+system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQQQ.vw --loss_function logistic  -q ii -q ci -q cc -b 28')
 #Testing VW:
-system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQ20Pass.vw -p ' + dataDir + 'logQ20.txt')
+system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQQQ.vw -p ' + dataDir + 'logQQQ.txt')
 
 #Neural Networks
 #Training VW:
@@ -45,8 +50,8 @@ system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'NN.vw --nn 100 --passes 20 
 system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'NN.vw -p ' + dataDir + 'NN100.txt')
 
 with open(dataDir + 'PredictionV.csv', 'wb') as outfile:
-    outfile.write('Id,Predicted\n')
+    outfile.write('Id, Predicted\n')
 #    for line in open(dataDir + 'logRegl1.txt'):
-    for line in open(dataDir + 'logQ20.txt'):
+    for line in open(dataDir + 'logQQQ.txt'):
         row = line.strip().split(" ")
         outfile.write("%s,%f\n"%(row[1], sigmoid(float(row[0]))))
