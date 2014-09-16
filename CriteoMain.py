@@ -14,44 +14,46 @@ def sigmoid(x):
 wd = '/home/wacax/Wacax/Kaggle/criteoLabs/CRITEO Display Advertising Challenge/'
 dataDir = '/home/wacax/Wacax/Kaggle/criteoLabs/Data/'
 
+hipersearchScriptLoc = '/home/wacax/vowpal_wabbit-7.7/utl/'
+vw77Dir = '/home/wacax/vowpal_wabbit-7.7/vowpalwabbit/'
+
 print getcwd()
 if getcwd() + '/' != wd:
     chdir(wd)
 
 #Transform the .csv files to vw format
-csv_to_vw(dataDir + 'train.csv', dataDir + 'train.vw', train=True)
-csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', train=False)
+csv_to_vw(dataDir + 'train.csv', dataDir + 'train2.vw', train=True)
+csv_to_vw(dataDir + 'test.csv', dataDir + 'test2.vw', train=False)
 
-#csv_to_vw(dataDir + 'train.csv', dataDir + 'train.vw', invalidFeatures=['Label', 'Id'],
+#csv_to_vw(dataDir + 'train.csv', dataDir + 'train2.vw', invalidFeatures=['Label', 'Id'],
 # Label='Label', ID='Id', weights=NULL, train=True)
-#csv_to_vw(dataDir + 'test.csv', dataDir + 'test.vw', invalidFeatures=['Id'],
+#csv_to_vw(dataDir + 'test.csv', dataDir + 'test2.vw', invalidFeatures=['Id'],
 # Label='Label', ID='Id', weights=NULL, train=False)
 
-#Use vowpal wabbit directly from command line for training
+# Find the l1-l2 error resulting in the lowest average loss
 #vw hypersearch
 # for a logistic loss train-set:
-#system('vw-hypersearch 1e-10 1 vw --l1 % ' + dataDir + 'train.vw')
-
-# Find the learning-rate resulting in the lowest average loss
-# for a logistic loss train-set:
-#system('vw-hypersearch 0.1 100 vw --loss_function logistic --learning_rate % train.dat')
+l1Value = system(hipersearchScriptLoc + 'vw-hypersearch -L 0.0000000000000001 1 vw --loss_function logistic --l1 % ' + dataDir + 'train.vw -q :: --cubic ::: -b 28')
+l2Value = system(hipersearchScriptLoc + 'vw-hypersearch -L 0.0000000000000001 1 vw --loss_function logistic --l2 % ' + dataDir + 'train.vw -q :: --cubic :::-b 28')
 
 #MODELING
-#Logistic Regression with l1 regularization
+#Logistic Regression with quadratic numerical features
 #Training VW:
-system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQQQ.vw --loss_function logistic  -q ii -q ci -q cc -b 28')
+system(vw77Dir + 'vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQl1.vw --loss_function logistic -q :: --cubic ::: -b 28 --l1 1.00628e-12')
+system(vw77Dir + 'vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQl2.vw --loss_function logistic -q :: --cubic ::: -b 28 --l2 1.63753e-09')
+
 #Testing VW:
-system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQQQ.vw -p ' + dataDir + 'logQQQ.txt')
+system(vw77Dir + 'vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQCl1.vw -p ' + dataDir + 'logQl1.txt')
+system(vw77Dir + 'vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQCl2.vw -p ' + dataDir + 'logQl2.txt')
 
 #Neural Networks
 #Training VW:
-system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'NN.vw --nn 100 --passes 20 -q ii -b 28')
+system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'NN.vw --nn 100 --loss_function logistic -q ii -b 28')
 #Testing VW:
 system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'NN.vw -p ' + dataDir + 'NN100.txt')
 
-with open(dataDir + 'PredictionV.csv', 'wb') as outfile:
-    outfile.write('Id, Predicted\n')
-#    for line in open(dataDir + 'logRegl1.txt'):
-    for line in open(dataDir + 'logQQQ.txt'):
+with open(dataDir + 'PredictionIX.csv', 'wb') as outfile:
+    outfile.write('Id,Predicted\n')
+    for line in open(dataDir + 'logQl1.txt'):
         row = line.strip().split(" ")
         outfile.write("%s,%f\n"%(row[1], sigmoid(float(row[0]))))

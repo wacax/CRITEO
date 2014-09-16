@@ -4,17 +4,6 @@ __author__ = 'wacax'
 #code based on https://github.com/MLWave/kaggle-criteo/blob/master/csv_to_vw.py
 
 #libraries
-from os import getcwd, chdir
-from pandas import read_csv
-
-#directories; change directories accordingly
-wd = '/home/wacax/Wacax/Kaggle/criteoLabs/CRITEO Display Advertising Challenge/'
-dataDir = '/home/wacax/Wacax/Kaggle/criteoLabs/Data/'
-
-print getcwd()
-if getcwd() + '/' != wd:
-    chdir(wd)
-
 from datetime import datetime
 from csv import DictReader
 #from pandas import read_csv
@@ -28,8 +17,8 @@ def csv_to_vw(loc_csv, loc_output, train=True):
     #minifile = read_csv(loc_csv, nrows=1000)
 
     #typeFeatures = minifile.dtypes
-    #fileObjectIXs = (typeFeatures.columns != invalidFeatures) and (typeFeatures == 'object')
-    #fileNumericIXs = (typeFeatures.columns != invalidFeatures) and (typeFeatures == 'float64' or type == 'int64')
+    #fileObjectIXs = (typeFeatures.index not in invalidFeatures) and (typeFeatures == 'object')
+    #fileNumericIXs = (typeFeatures.index not in invalidFeatures) and (typeFeatures == 'float64' or type == 'int64')
 
     #Features have to be in the form:
     #[Label] [Importance [Tag]]|Namespace Features |Namespace Features ... |Namespace Features
@@ -92,16 +81,16 @@ def test(plot=True):
     #Load Data as Pandas Data Frame
     #Read .csv Data
     #sample Train
-    train = read_csv(dataDir + 'train.csv', nrows=10000)
+    #train = read_csv(dataDir + 'train.csv', nrows=10000)
     #sample Test
-    test = read_csv(dataDir + 'test.csv', nrows=10000)
+    #test = read_csv(dataDir + 'test.csv', nrows=10000)
 
     #sample Submission
-    submission = read_csv(dataDir + 'random_submission.csv')
+    #submission = read_csv(dataDir + 'random_submission.csv')
 
     if plot==True:
         #EDA
-        train['Label'].hist()
+    #    train['Label'].hist()
         plt.ylabel('Amount of positive labels')
         plt.show()
 
