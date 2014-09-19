@@ -21,6 +21,10 @@ print getcwd()
 if getcwd() + '/' != wd:
     chdir(wd)
 
+#DNS and Keys
+KeypairFile = '/home/wacax/Wacax/AWSCredentials/wacax-key-pair-uswest2.pem '
+DNS = 'ec2-54-69-30-200.us-west-2.compute.amazonaws.com'
+
 #Transform the .csv files to vw format
 csv_to_vw(dataDir + 'train.csv', dataDir + 'train2.vw', train=True)
 csv_to_vw(dataDir + 'test.csv', dataDir + 'test2.vw', train=False)
@@ -33,24 +37,49 @@ csv_to_vw(dataDir + 'test.csv', dataDir + 'test2.vw', train=False)
 # Find the l1-l2 error resulting in the lowest average loss
 #vw hypersearch
 # for a logistic loss train-set:
-l1Value = system(hipersearchScriptLoc + 'vw-hypersearch -L 0.0000000000000001 1 vw --loss_function logistic --l1 % ' + dataDir + 'train.vw -q :: --cubic ::: -b 28')
-l2Value = system(hipersearchScriptLoc + 'vw-hypersearch -L 0.0000000000000001 1 vw --loss_function logistic --l2 % ' + dataDir + 'train.vw -q :: --cubic :::-b 28')
+l1Value = system(hipersearchScriptLoc + 'vw-hypersearch -L 0.0000000000000000001 1 vw -q :: --loss_function logistic'
+                                        ' --l1 % ' + dataDir + 'train.vw -b 28')
+l2Value = system(hipersearchScriptLoc + 'vw-hypersearch -L 0.0000000000000000001 1 vw -q :: --loss_function logistic'
+                                        ' --l2 % ' + dataDir + 'train.vw -b 28')
+
+#NN hyperparameter search:
+#raw input
+lValueNN = system(hipersearchScriptLoc + 'vw-hypersearch 1e-10 1 vw --loss_function logistic --oaa 10 -l % '
+                  + dataDir + 'train.vw --nn 10 --inpass --adaptive --invariant --holdout_off -b 28 --passes 15 -k --compressed')
+
+#Send Train.vw file
+#zip it first to reduce sending time
+system('gzip -c -9 ' + dataDir + 'train.vw > ' + dataDir + 'train.gz')
+system('gzip -c -9 ' + dataDir + 'test.vw > ' + dataDir + 'test.gz')
+
+#send train.gz to the remote instance
+system('scp -i ' + KeypairFile + dataDir + 'train.gz' + ' ubuntu@' + DNS + ':')
+#send vowpal wabbit source to the remote instance
+system('scp -i ' + KeypairFile + dataDir + 'vowpal_wabbit-7.7.tar.gz' + ' ubuntu@' + DNS + ':')
+
+#Connect with the remote instance
+#system('ssh -X -i ' + KeypairFile + ' ubuntu@' + DNS) #you need a ssh connection so it has to be done from command line
 
 #MODELING
 #Logistic Regression with quadratic numerical features
 #Training VW:
-system(vw77Dir + 'vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQl1.vw --loss_function logistic -q :: --cubic ::: -b 28 --l1 1.00628e-12')
-system(vw77Dir + 'vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQl2.vw --loss_function logistic -q :: --cubic ::: -b 28 --l2 1.63753e-09')
+system(vw77Dir + 'vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQallL1.model --loss_function logistic '
+                                                              '-q :: -b 28 --l1 2.19068e-16')
+system(vw77Dir + 'vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQallL2.model --loss_function logistic '
+                                                              '-q :: -b 28 --l2 4.22829e-16')
+system(vw77Dir + 'vw ' + dataDir + 'train.vw -f ' + dataDir + 'modelLogQallL1L2.model --loss_function logistic '
+                                                              '-q :: -b 28 --l1 2.19068e-16 --l2 4.22829e-16')
 
 #Testing VW:
-system(vw77Dir + 'vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQCl1.vw -p ' + dataDir + 'logQl1.txt')
-system(vw77Dir + 'vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQCl2.vw -p ' + dataDir + 'logQl2.txt')
+system(vw77Dir + 'vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQallCallL1.model -p ' + dataDir + 'logQl1.txt')
+system(vw77Dir + 'vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'modelLogQallCallL2.model -p ' + dataDir + 'logQl2.txt')
 
 #Neural Networks
 #Training VW:
-system('vw ' + dataDir + 'train.vw -f ' + dataDir + 'NN.vw --nn 100 --loss_function logistic -q ii -b 28')
+system(vw77Dir + 'vw --oaa 10 ' + dataDir + 'train.vw -f ' + dataDir + 'NN.vw --loss_function logistic'
+                                                                       ' --adaptive --invariant --holdout_off --nn 20 -b 28 -l 0.02 --passes 15 -c')
 #Testing VW:
-system('vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'NN.vw -p ' + dataDir + 'NN100.txt')
+system(vw77Dir + 'vw ' + dataDir + 'test.vw -t -i ' + dataDir + 'NN.vw -p ' + dataDir + 'NN100.txt')
 
 with open(dataDir + 'PredictionIX.csv', 'wb') as outfile:
     outfile.write('Id,Predicted\n')
