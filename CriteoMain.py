@@ -4,7 +4,7 @@ __author__ = 'wacax'
 from os import getcwd, chdir, system
 from numpy import exp
 from pandas import read_csv
-from numpy import vstack, savetxt
+from numpy import vstack
 
 #Add user defined functions
 from csv2vw import csv_to_vw
@@ -164,7 +164,7 @@ ensembleAvg = vstack((sigmoid(vwTextOutputLog.ix[:, 0]).as_matrix(), Hingescaled
 submissionTemplate['Predicted'] = ensembleAvg.mean(axis=1)
 submissionTemplate.to_csv(ensembleDir + 'PredictionXXV.csv', index=False)
 
-#Log Simple Ensemble
+#Simple Ensemble
 vwTextOutputLog1 = read_csv(dataDir + 'LogQallNgram2.txt', sep=' ', header=None)
 vwTextOutputLog2 = read_csv(dataDir + 'LogQallNgram2L1.txt', sep=' ', header=None)
 vwTextOutputLog3 = read_csv(dataDir + 'LogQallNgram2L2.txt', sep=' ', header=None)
@@ -174,28 +174,12 @@ ensembleAvgLog = vstack((sigmoid(vwTextOutputLog1.ix[:, 0]).as_matrix(),
                          sigmoid(vwTextOutputLog2.ix[:, 0]).as_matrix(),
                          sigmoid(vwTextOutputLog3.ix[:, 0]).as_matrix(),
                          sigmoid(vwTextOutputLog4.ix[:, 0]).as_matrix(),
-                         Hingescaled)).T
+                         Hingescaled, Sqscaled)).T
 submissionTemplate['Predicted'] = ensembleAvgLog.mean(axis=1)
-submissionTemplate.to_csv(dataDir + 'SimpleEnsembleLogHin.csv', index=False)
+submissionTemplate.to_csv(dataDir + 'SimpleEnsembleLogHinSq.csv', index=False)
 
 #Ranked Ensemble (Ranked Average)
 kaggle_rank_avg(ensembleDir + '*.csv', dataDir + 'RankEnsembleFull.csv')
 submissionRankTemplate = read_csv(dataDir + 'RankEnsemble.csv', index_col=False)
 submissionTemplate['Predicted'] = ensembleAvg.mean(axis=1)
 
-
-'''
-with open(dataDir + 'PredictionXIII.csv', 'wb') as outfile:
-    outfile.write('Id,Predicted\n')
-    for line in open(dataDir + 'LogQallNgram2L1L2.txt'):
-        row = line.strip().split(" ")
-        outfile.write("%s,%f\n"%(row[1], sigmoid(float(row[0]))))
-
-
-
-with open(dataDir + 'PredictionX.csv', 'wb') as outfile:
-    outfile.write('Id,Predicted\n')
-    for line in open(dataDir + 'LogQallNgram2.txt'):
-        row = line.strip().split(" ")
-        outfile.write("%s,%f\n"%(row[1], min_max_scaler.fit_transform(array(row[0]))))
-'''
